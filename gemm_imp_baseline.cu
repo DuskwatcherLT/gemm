@@ -47,16 +47,26 @@ __global__ void gemm_baseline(const  Type_A * __restrict__ A, const Type_B *__re
 class GEMM_Baseline : public GEMM<half, half, float>  {
 public:
     GEMM_Baseline(int M, int N, int K) : GEMM(M, N, K) {}
-
     virtual void call_kernel() override {
         dim3 num_blocks((N + 15) / 16, (M + 15) / 16);
         dim3 block_size(16,16);
-        
-        gemm_baseline<<<num_blocks, block_size>>>(d_A, d_B, d_C, M, N, K);        
+        cudaEvent_t start, stop;
+        cudaEventCreate(&start);
+        cudaEventCreate(&stop);
+        //start the timer
+        cudaEventRecord(start, 0);
 
-        // configure and call your kernel here. 
-        // you may also add your timer in here
-        // you can also add timers elsewhere. 
+        gemm_baseline<<<num_blocks, block_size>>>(d_A, d_B, d_C, M, N, K);        
+ 
+        // Synchronize the device to ensure the kernel has finished
+        cudaDeviceSynchronize();
+        // Stop the timer
+        cudaEventRecord(stop, 0);
+        cudaEventSynchronize(stop);
+
+        float elapsedTime;
+        cudaEventElapsedTime(&elapsedTime, start, stop);
+        cout << "Kernel execution time: " << elapsedTime << " ms" << endl;
     }
 };
 
