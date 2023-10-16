@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cassert>
 #include <iostream>
+#include "nvToolsExt.h"
 
 using std::vector;
 using std::cout;
@@ -67,6 +68,7 @@ public:
         float elapsedTime;
         cudaEventElapsedTime(&elapsedTime, start, stop);
         cout << "Kernel execution time: " << elapsedTime << " ms" << endl;
+        cout << "GFLOPS: " << 2.0 * M * N * K / (elapsedTime * 1e6) << endl;
     }
 };
 
